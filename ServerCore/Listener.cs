@@ -49,9 +49,5 @@ namespace ServerCore
 
             RegisterAccept(args);
         }
-        public Socket Accept()
-        {
-            return _listenSocket.Accept();
-        }
     }
 }

@@ -67,31 +67,7 @@ namespace ServerCore
 
             RegisterRecv();
         }
-
-        public void Send(ArraySegment<byte> sendBuff)
-        {
-            lock(_lock)
-            {
-                _sendQueue.Enqueue(sendBuff);
-                
-                if (_pendingList.Count == 0)
-                {
-                    RegisterSend();
-                }
-            }
-            
-        }
-
-        public void Disconnect()
-        {
-            if (Interlocked.Exchange(ref _disconnected, 1) == 1) // 이전 값이 1이면 이미 disconnected된 socket임.
-                return;
-
-            OnDisconnect(_socket.RemoteEndPoint);
-
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
-        }
+        
 
         private void RegisterRecv()
         {
@@ -146,12 +122,25 @@ namespace ServerCore
             }
         }
 
+        public void Send(ArraySegment<byte> sendBuff)
+        {
+            lock (_lock)
+            {
+                _sendQueue.Enqueue(sendBuff);
+
+                if (_pendingList.Count == 0)
+                {
+                    RegisterSend();
+                }
+            }
+
+        }
+
         private void RegisterSend()
         {
             while (_sendQueue.Count > 0)
             {
                 ArraySegment<byte> buff = _sendQueue.Dequeue();
-                //_sendArgs.BufferList.Add(new ArraySegment<byte>(buff, 0, buff.Length));
                 _pendingList.Add(buff);
             }
 
@@ -194,6 +183,18 @@ namespace ServerCore
             }
         }
 
-        
+
+        public void Disconnect()
+        {
+            if (Interlocked.Exchange(ref _disconnected, 1) == 1) // 이전 값이 1이면 이미 disconnected된 socket임.
+                return;
+
+            OnDisconnect(_socket.RemoteEndPoint);
+
+            _socket.Shutdown(SocketShutdown.Both);
+            _socket.Close();
+        }
+
+
     }
 }
