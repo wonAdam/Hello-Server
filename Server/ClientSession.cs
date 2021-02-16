@@ -7,22 +7,63 @@ using System.Threading;
 
 namespace Server
 {
-    class Packet
+    abstract class Packet
     {
         public ushort size;
         public ushort packetId;
+
+        public abstract ArraySegment<byte> Write();
+        public abstract void Read(ArraySegment<byte> s);
     }
 
     class PlayerInfoReq : Packet
     {
         public long playerId;
 
-    }
+        public PlayerInfoReq()
+        {
+            packetId = (ushort)PacketID.PlayerInfoReq;
+        }
 
-    class PlayerInfoOk : Packet
-    {
-        public int hp;
-        public int attack;
+        public override void Read(ArraySegment<byte> s)
+        {
+            ushort count = 0;
+            ushort size = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+
+            if (size != s.Count)
+                return;
+
+            ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+
+
+            playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
+            count += 8;
+        }
+
+        public override ArraySegment<byte> Write()
+        {
+            ArraySegment<byte> s = SendBufferHelper.Open(4096);
+
+            bool success = true;
+            ushort count = 0;
+
+            //success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.size);
+            count += 2; // 패킷의 사이즈는 나중에 정함
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packetId);
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), playerId);
+            count += 8;
+
+            // 패킷의 사이즈
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count);
+
+            if (!success)
+                return null;
+
+            return SendBufferHelper.Close(count);
+        }
     }
 
     public enum PacketID
@@ -71,9 +112,9 @@ namespace Server
             {
                 case PacketID.PlayerInfoReq:
                     {
-                        long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
-                        count += 8;
-                        Console.WriteLine($"PlayerInfoReq : playerId={playerId}");
+                        PlayerInfoReq p = new PlayerInfoReq();
+                        p.Read(buffer);
+                        Console.WriteLine($"PlayerInfoReq : playerId={p.playerId}");
                     }
                     break;
                 case PacketID.PlayerInfoOk:
