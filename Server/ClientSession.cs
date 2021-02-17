@@ -19,6 +19,7 @@ namespace Server
     class PlayerInfoReq : Packet
     {
         public long playerId;
+        public string name;
 
         public PlayerInfoReq()
         {
@@ -32,17 +33,21 @@ namespace Server
             ushort count = 0;
 
             ushort size = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
-            count += 2;
+            count += sizeof(ushort);
 
             if (size != s.Length)
                 return;
 
             ushort id = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
-            count += 2;
-
+            count += sizeof(ushort);
 
             playerId = BitConverter.ToInt64(s.Slice(count, s.Length - count));
-            count += 8;
+            count += sizeof(long);
+
+            //string
+            ushort nameLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+            count += sizeof(ushort);
+            name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
         }
 
         public override ArraySegment<byte> Write()
@@ -58,6 +63,15 @@ namespace Server
             count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), playerId);
             count += sizeof(long);
+
+            // string
+            ushort nameLen = (ushort)Encoding.Unicode.GetByteCount(this.name);
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
+            count += sizeof(ushort);
+            Array.Copy(Encoding.Unicode.GetBytes(this.name), 0, segment.Array, count, nameLen);
+            count += nameLen;
+
+            // 패킷사이즈
             success &= BitConverter.TryWriteBytes(s, count);
 
             if (!success)
@@ -115,7 +129,7 @@ namespace Server
                     {
                         PlayerInfoReq p = new PlayerInfoReq();
                         p.Read(buffer);
-                        Console.WriteLine($"PlayerInfoReq : playerId={p.playerId}");
+                        Console.WriteLine($"PlayerInfoReq : playerId={p.playerId} / playerName={p.name}");
                     }
                     break;
                 case PacketID.PlayerInfoOk:

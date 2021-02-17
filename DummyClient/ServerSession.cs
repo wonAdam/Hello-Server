@@ -18,6 +18,7 @@ namespace DummyClient
     class PlayerInfoReq : Packet
     {
         public long playerId;
+        public string name;
 
         public PlayerInfoReq()
         {
@@ -31,17 +32,21 @@ namespace DummyClient
             ushort count = 0;
 
             ushort size = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
-            count += 2;
+            count += sizeof(ushort);
 
             if (size != s.Length)
                 return;
 
             ushort id = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
-            count += 2;
-
+            count += sizeof(ushort);
 
             playerId = BitConverter.ToInt64(s.Slice(count, s.Length - count));
-            count += 8;
+            count += sizeof(long);
+
+            //string
+            ushort nameLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+            count += sizeof(ushort);
+            name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
         }
 
         public override ArraySegment<byte> Write()
@@ -57,6 +62,21 @@ namespace DummyClient
             count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), playerId);
             count += sizeof(long);
+
+            // string #1
+            //ushort nameLen = (ushort)Encoding.Unicode.GetByteCount(this.name);
+            //success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
+            //count += sizeof(ushort);
+            //Array.Copy(Encoding.Unicode.GetBytes(this.name), 0, segment.Array, count, nameLen);
+            //count += nameLen;
+
+            // string #2
+            ushort nameLen = (ushort)Encoding.Unicode.GetBytes(name, 0, name.Length, segment.Array, segment.Offset + count + sizeof(ushort));
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
+            count += sizeof(ushort);
+            count += nameLen;
+
+            // 패킷사이즈
             success &= BitConverter.TryWriteBytes(s, count);
 
             if (!success)
@@ -78,7 +98,7 @@ namespace DummyClient
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001 };
+            PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001, name="wonAdam" };
 
             // Send
             //for (int i = 0; i < 5; i++)
