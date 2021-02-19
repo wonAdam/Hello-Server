@@ -15,12 +15,12 @@ namespace DummyClient
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001, name="wonAdam" };
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 102, level = 2, duration = 1.3f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 103, level = 4, duration = 1.2f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 104, level = 1, duration = 4.0f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 105, level = 1, duration = 2.0f });
+            C_PlayerInfoReq packet = new C_PlayerInfoReq() { playerId = 1001, name="wonAdam" };
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 102, level = 2, duration = 1.3f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 103, level = 4, duration = 1.2f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 104, level = 1, duration = 4.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 105, level = 1, duration = 2.0f });
 
             // Send
             for (int i = 0; i < 5; i++)
@@ -30,6 +30,7 @@ namespace DummyClient
                 if(sendBuff != null)
                     Send(sendBuff);
             }
+
         }
 
         public override void OnDisconnect(EndPoint endPoint)

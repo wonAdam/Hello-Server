@@ -5,14 +5,14 @@ using System.Threading;
 
 namespace Server
 {
-    
-
     class Program
     {
         static Listener _listener = new Listener();
 
         static void Main(string[] args)
         {
+            PacketManager.Instance.Register();
+
             string host = Dns.GetHostName();
             IPHostEntry ipHost = Dns.GetHostEntry(host);
             IPAddress ipAddr = ipHost.AddressList[0];

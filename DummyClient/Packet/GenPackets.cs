@@ -4,13 +4,21 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using ServerCore;
+
+public interface IPacket
+{
+	ushort Protocol { get; }
+	void Read(ArraySegment<byte> segment);
+	ArraySegment<byte> Write();
+}
+
 public enum PacketID
 {
-    PlayerInfoReq = 1,	test = 2,	
+    C_PlayerInfoReq = 1,	S_Test = 2,	
 }
 
 
-class PlayerInfoReq
+class C_PlayerInfoReq : IPacket
 {
     public byte testByte;
 	public long playerId;
@@ -46,6 +54,8 @@ class PlayerInfoReq
 	            
 	        }
 	        public List<Skill> skills = new List<Skill>();
+
+    public ushort Protocol { get { return (ushort)PacketID.C_PlayerInfoReq; } }
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -93,7 +103,7 @@ class PlayerInfoReq
         ushort count = 0;
 
         count += sizeof(ushort); // 패킷의 사이즈는 나중에 정함
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.PlayerInfoReq);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.C_PlayerInfoReq);
         count += sizeof(ushort);
         
         segment.Array[segment.Offset + count] = (byte)this.testByte;
@@ -118,9 +128,11 @@ class PlayerInfoReq
         return SendBufferHelper.Close(count);
     }
 }
-class test
+class S_Test : IPacket
 {
     public int testInt;
+
+    public ushort Protocol { get { return (ushort)PacketID.S_Test; } }
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -151,7 +163,7 @@ class test
         ushort count = 0;
 
         count += sizeof(ushort); // 패킷의 사이즈는 나중에 정함
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.test);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_Test);
         count += sizeof(ushort);
         
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.testInt);
