@@ -10,14 +10,14 @@ namespace Server
 {
     class ClientSession : PacketSession
     {
+        public int SessionId { get; set; }
+        public GameRoom Room { get; set; }
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            Thread.Sleep(5000);
-            Disconnect();
+            Program.Room.Enter(this);
 
-            Console.WriteLine($"OnConnected : {endPoint}");
         }
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
@@ -26,7 +26,7 @@ namespace Server
             // test Send
             for (int i = 0; i < 5; i++)
             {
-                S_Test testPacket = new S_Test() { testInt = i };
+                S_Chat testPacket = new S_Chat() { chat = "dsadada", playerId = 1000 };
                 ArraySegment<byte> sendBuff = testPacket.Write();
 
                 if (sendBuff != null)
@@ -36,6 +36,13 @@ namespace Server
 
         public override void OnDisconnect(EndPoint endPoint)
         {
+            SessionManager.Instance.Remove(this);
+            if (Room != null)
+            {
+                Room.Exit(this);
+                Room = null;
+            }
+
             Console.WriteLine($"OnDisconnected : {endPoint}");
         }
 

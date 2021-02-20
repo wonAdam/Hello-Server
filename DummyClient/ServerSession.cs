@@ -7,30 +7,11 @@ using ServerCore;
 
 namespace DummyClient
 {
-    
-
-    class ServerSession : Session
+    class ServerSession : PacketSession
     {
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnected : {endPoint}");
-
-            C_PlayerInfoReq packet = new C_PlayerInfoReq() { playerId = 1001, name="wonAdam" };
-            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f });
-            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 102, level = 2, duration = 1.3f });
-            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 103, level = 4, duration = 1.2f });
-            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 104, level = 1, duration = 4.0f });
-            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 105, level = 1, duration = 2.0f });
-
-            // Send
-            for (int i = 0; i < 5; i++)
-            {
-                ArraySegment<byte> sendBuff = packet.Write();
-
-                if(sendBuff != null)
-                    Send(sendBuff);
-            }
-
         }
 
         public override void OnDisconnect(EndPoint endPoint)
@@ -38,12 +19,9 @@ namespace DummyClient
             Console.WriteLine($"OnDisconnected : {endPoint}");
         }
 
-        public override int OnRecv(ArraySegment<byte> buffer)
+        public override void OnRecvPacket(ArraySegment<byte> buffer)
         {
-            string recvData = Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count);
-            Console.WriteLine($"[From Server] {recvData}");
-
-            return buffer.Count;
+            PacketManager.Instance.OnRecvPacket(this, buffer);
         }
 
         public override void OnSend(int numOfByte)

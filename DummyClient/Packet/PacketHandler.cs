@@ -1,16 +1,16 @@
-﻿using ServerCore;
+﻿using DummyClient;
+using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 public class PacketHandler
 {
-
-    public static void S_TestHandler(PacketSession session, IPacket packet)
+    public static void S_ChatHandler(PacketSession session, IPacket packet)
     {
-        S_Test p = packet as S_Test;
+        S_Chat chatPacket = packet as S_Chat;
+        ServerSession serverSession = session as ServerSession;
 
-        Console.WriteLine($"test : testInt={p.testInt}");
-        
+        Console.WriteLine($"S_Chat : playerId={chatPacket.playerId} / chat={chatPacket.chat}");
     }
 }
