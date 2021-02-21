@@ -16,8 +16,7 @@ namespace Server
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            Program.Room.Enter(this);
-
+            Program.Room.Push(() => Program.Room.Enter(this));
         }
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
@@ -39,7 +38,8 @@ namespace Server
             SessionManager.Instance.Remove(this);
             if (Room != null)
             {
-                Room.Exit(this);
+                GameRoom room = Room;
+                room.Push(() => room.Exit(this));
                 Room = null;
             }
 
@@ -49,7 +49,7 @@ namespace Server
 
         public override void OnSend(int numOfByte)
         {
-            Console.WriteLine($"Transfered Bytes: {numOfByte}");
+            //Console.WriteLine($"Transfered Bytes: {numOfByte}");
         }
     }
 }

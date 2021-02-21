@@ -11,6 +11,6 @@ public class PacketHandler
         S_Chat chatPacket = packet as S_Chat;
         ServerSession serverSession = session as ServerSession;
 
-        Console.WriteLine($"S_Chat : playerId={chatPacket.playerId} / chat={chatPacket.chat}");
+        //Console.WriteLine($"S_Chat : playerId={chatPacket.playerId} / chat={chatPacket.chat}");
     }
 }
