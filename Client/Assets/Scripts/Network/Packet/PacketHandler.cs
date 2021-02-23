@@ -3,6 +3,7 @@ using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 
 public class PacketHandler
 {
@@ -11,6 +12,6 @@ public class PacketHandler
         S_Chat chatPacket = packet as S_Chat;
         ServerSession serverSession = session as ServerSession;
 
-        Console.WriteLine($"S_Chat : playerId={chatPacket.playerId} / chat={chatPacket.chat}");
+        Debug.Log($"S_Chat : playerId={chatPacket.playerId} / chat={chatPacket.chat}");
     }
 }

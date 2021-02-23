@@ -35,7 +35,7 @@ namespace ServerCore
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
             }
             if(packetCount > 1)
-                Console.WriteLine($"packet lazy send : {packetCount}");
+                Console.WriteLine($"패킷 모아보내기 : {packetCount}");
 
             return processLen;
         }
